@@ -1,0 +1,46 @@
+---
+title: mapper-soilCondition
+subtitle: Pilot project for mapping indicators for soil health in Norway using the myrselskapet dataset. 
+author: "willeke acampo (NINA), jenny hanssen (NINA) willeke.acampo@nina.no, jenny.hansen@nina.no"
+bibliography: bibliography.bib
+link-citations: yes
+output:
+  html_document:
+    toc: yes
+    df_print: paged
+  pdf_document:
+    toc: yes
+    df_print: kable
+    fig_width: 7
+    fig_caption: yes
+    html_document:
+      number_sections: no
+      theme: cerulean
+      highligt: pygments
+---
+
+# mapper-soilCondition
+
+by: willeke acampo (NINA), jenny hanssen (NINA) willeke.acampo@nina.no, jenny.hansen@nina.no
+
+## Introduction*
+
+Pilot project for mapping indicators for soil health in Norway using the myrselskapet dataset. 
+
+## Data Inspection
+
+## Data Preprocessing
+
+## Model
+
+## Diagnostics
+<!-- Residuals Error Checking -->
+
+## Forecast
+
+## Analysis
+
+## Conclusion
+
+## References
+<!-- This is required to attach the bibliography -->
