@@ -3,3 +3,9 @@ lintr
 captioner
 renv
 dplyr
+readxl
+janitor
+stringr
+tidyr
+sf
+dotenv

@@ -1,4 +1,4 @@
-packages <- scan("requirements.txt", what = "", sep = "\n")
+packages <- scan("requirements_R.txt", what = "", sep = "\n")
 
 install_load_packages <- function(packages, isPrint = FALSE) {
 
