@@ -115,7 +115,7 @@ venv.bak/
 
 # exclude folders
 /data/*
-/data/test/*
+/src/data/test/*
 !data/.gitkeep 
 /test/*
 /src/test/*
