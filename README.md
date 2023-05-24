@@ -2,6 +2,8 @@
  
 Pilot project for mapping indicators for soil health in Norway using the myrselskapet dataset. 
 
+Project status: in progress
+
 ## Getting started
 
 ________________
