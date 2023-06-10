@@ -1,0 +1,3 @@
+# .here file is used by here package to point to the project root dir
+# use the `here()` function to refer to a file relative to the root
+# data <- read.csv(here("path", "to", "my", "file.csv"))
