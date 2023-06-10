@@ -7,7 +7,28 @@ Project status: in progress
 ## Getting started
 
 ________________
-insert tekst here
+## Install developer requirements
+
+1. [Install R](https://cran.r-project.org/mirrors.html)
+
+2. Run `setup.R` file to initialize the R project on your local machine and to download the necessary packages and dependencies. 
+
+In terminal run:
+```
+Rscript .setup.R
+```
+
+OR run through radian:
+```
+conda activate <<name-of-conda-env-with-radian-installed>>
+r
+.setup.R
+```
+3. Create an .env-file in you user-dir:
+
+```
+WETLAND_PATH= path/to/project/folder/
+```
 
 ## File structure
 ________________
