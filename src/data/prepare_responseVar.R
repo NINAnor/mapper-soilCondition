@@ -5,44 +5,59 @@
 # working in the Wetland_Carbon_Mod project
 
 
-#Sys.setlocale("LC_CTYPE", "nb_NO.UTF-8")
+# Sys.setlocale("LC_CTYPE", "nb_NO.UTF-8")
+# rm(list = ls())
 
-#rm(list = ls())
 # Load required libraries -------------------------------------------------
+#install.packages("readxl")
+library(here)
 library(readxl)
 library(janitor)
 library(dplyr)
 library(stringr)
 library(tidyr)
 library(sf)
-library(dotenv)
+library(dotenv) # loading secure variables from .env file
+
 
 # Project variables -------------------------------------------------------
-user_dir <- Sys.getenv("HOME")
+project_root <- here()
+cat(project_root, "\n")
+
+# load secure variables from .env file
+#user_dir <- Sys.getenv("HOME") #linux
+user_dir <- Sys.getenv("USERPROFILE") #windows
 load_dot_env(file.path(user_dir, ".env"))
-path_raw <- file.path(Sys.getenv("WETLAND_PATH_LNX"), "data", "raw")
-path_interim <- file.path(Sys.getenv("WETLAND_PATH_LNX"), "data", "interim")
+
+
+# windows NINA project folders
+path_raw <- file.path(Sys.getenv("WETLAND_PATH_WIN"), "data", "raw")
+path_interim <- file.path(Sys.getenv("WETLAND_PATH_WIN"), "data", "interim")
+
+# linux NINA project folders
+#path_raw <- file.path(Sys.getenv("WETLAND_PATH_LNX"), "data", "raw")
+#path_interim <- file.path(Sys.getenv("WETLAND_PATH_LNX"), "data", "interim")
 
 # Import data -------------------------------------------------------------
-path_myr_sf = file.path(path_raw,"vector", "new.shp")
+path_myr_sf <- file.path(path_raw, "vector", "new.shp")
 myr_sf <- st_read(path_myr_sf)
 head(myr_sf)
 
 # Myrselskapet data came from the project sharepoint folder
 # prior to importing, I corrected some errors in the raw data
-# the CaO measurement at Helgeland_50 had both a commma and a period, 
-# so I removed the comma, the CaO measurements at Furnes_4 were missing 
-# a semicolon separator, so I added one, at Osen_1, _12, and _19, 
-# I removed extra semicolons in the total peat depth column 
+# the CaO measurement at Helgeland_50 had both a commma and a period,
+# so I removed the comma, the CaO measurements at Furnes_4 were missing
+# a semicolon separator, so I added one, at Osen_1, _12, and _19,
+# I removed extra semicolons in the total peat depth column
 
-path_myr_data = file.path(path_raw,"Digitalisert_myrselskapet.xlsx")
+path_myr_data <- file.path(path_raw, "Digitalisert_myrselskapet.xlsx")
 myr_data <- read_excel(path_myr_data, skip = 1,
-                       col_names = FALSE) %>% 
-  row_to_names(1) %>% 
-  clean_names() %>% 
+                       col_names = FALSE) %>%
+  row_to_names(1) %>%
+  clean_names() %>%
   filter(!is.na(aske_percent),
          !is.na(gis_navn),
-         gis_navn != "-") %>% 
+         gis_navn != "-") %>%
   select(gis_navn, aske_percent, n_percent, ca_o_percent, myrtype_2,
          volumvekt_torrstoff_pr_1_gram, total_dybde_m)
 names(myr_data)
@@ -62,69 +77,69 @@ myr_data[77, 1] <- "Elverum_288"
 # comma-period situation is changed to periods, the column is changed
 # to a numeric and then the data is grouped by the GIS name and the
 # average value is obtained
-# this is done separately for all measurements because they differ in the 
+# this is done separately for all measurements because they differ in the
 # number of measurements taken at each site
 # values are merged (NB: since ash is our main variable of interest, it is
 # the only variable not containing NAs)
 
 # 335 records with ash%
 
-avg_ash_df <- myr_data %>% 
-  separate_longer_delim(aske_percent, delim = ";") %>% 
+avg_ash_df <- myr_data %>%
+  separate_longer_delim(aske_percent, delim = ";") %>%
   mutate(ash_prct = str_replace_all(aske_percent, ",", "."),
-         ash_prct = str_replace_all(ash_prct, pattern = "\\s", 
+         ash_prct = str_replace_all(ash_prct, pattern = "\\s",
                                     replacement = ""),
-         ash_prct = as.numeric(ash_prct)) %>% 
-  group_by(gis_navn) %>% 
+         ash_prct = as.numeric(ash_prct)) %>%
+  group_by(gis_navn) %>%
   summarise(avg_ash = mean(ash_prct))
 
 # 307 records with N%
 
-avg_n_df <- myr_data %>% 
-  filter(!is.na(n_percent)) %>% 
-  separate_longer_delim(n_percent, delim = ";") %>% 
+avg_n_df <- myr_data %>%
+  filter(!is.na(n_percent)) %>%
+  separate_longer_delim(n_percent, delim = ";") %>%
   mutate(n_prct = str_replace_all(n_percent, ",", "."),
          n_prct = str_replace_all(n_prct, pattern = "\\s", replacement = "."),
-         n_prct = as.numeric(n_prct)) %>%  
-  group_by(gis_navn) %>% 
-  summarise(avg_n = mean(n_prct)) 
+         n_prct = as.numeric(n_prct)) %>%
+  group_by(gis_navn) %>%
+  summarise(avg_n = mean(n_prct))
 
 # 307 records with CaO%
 
-avg_cao_df <- myr_data %>% 
-  filter(!is.na(ca_o_percent)) %>% 
+avg_cao_df <- myr_data %>%
+  filter(!is.na(ca_o_percent)) %>%
   separate_longer_delim(ca_o_percent, delim = ";") %>%
   mutate(cao_prct = str_replace_all(ca_o_percent, ",", "."),
          cao_prct = str_replace_all(cao_prct, pattern = "\\s", replacement = ""),
-         cao_prct = as.numeric(cao_prct)) %>%  
-  group_by(gis_navn) %>% 
-  summarise(avg_cao = mean(cao_prct)) 
+         cao_prct = as.numeric(cao_prct)) %>%
+  group_by(gis_navn) %>%
+  summarise(avg_cao = mean(cao_prct))
 
-# 236 records with dry soil weight 
+# 236 records with dry soil weight
 
-avg_dsw_df <- myr_data %>% 
-  filter(!is.na(volumvekt_torrstoff_pr_1_gram )) %>% 
+avg_dsw_df <- myr_data %>%
+  filter(!is.na(volumvekt_torrstoff_pr_1_gram )) %>%
   separate_longer_delim(volumvekt_torrstoff_pr_1_gram , delim = ";") %>%
   mutate(dry_soil_weight = str_replace_all(volumvekt_torrstoff_pr_1_gram , ",", "."),
          dry_soil_weight = str_replace_all(dry_soil_weight, "\\s", "."),
-         dry_soil_weight = as.numeric(dry_soil_weight)) %>%  
-  group_by(gis_navn) %>% 
-  summarise(avg_dsw = mean(dry_soil_weight)) 
+         dry_soil_weight = as.numeric(dry_soil_weight)) %>%
+  group_by(gis_navn) %>%
+  summarise(avg_dsw = mean(dry_soil_weight))
   
 # 163 records with total peat depth
 
-avg_pd_df <- myr_data %>% 
-  mutate(total_dybde_m = na_if(total_dybde_m, "-")) %>% 
-  filter(!is.na(total_dybde_m)) %>% 
-  separate_longer_delim(total_dybde_m, delim = ";") %>% 
+avg_pd_df <- myr_data %>%
+  mutate(total_dybde_m = na_if(total_dybde_m, "-")) %>%
+  filter(!is.na(total_dybde_m)) %>%
+  separate_longer_delim(total_dybde_m, delim = ";") %>%
   mutate(peat_depth = str_replace_all(total_dybde_m, ",", "."),
          peat_depth = str_replace_all(peat_depth, ">", ""),
          peat_depth = str_replace_all(peat_depth, "over ", ""),
          peat_depth = str_replace_all(peat_depth, "ca.", ""),
          peat_depth = str_replace_all(peat_depth, "\\s", "."),
 
-         peat_depth = as.numeric(peat_depth)) %>% 
-  group_by(gis_navn) %>% 
+         peat_depth = as.numeric(peat_depth)) %>%
+  group_by(gis_navn) %>%
   summarise(avg_pd = mean(peat_depth))
 
 # split out myrtype
@@ -146,7 +161,7 @@ myrtype_df <- myr_data %>%
 
 df_list <- list(avg_ash_df, avg_cao_df, avg_n_df, avg_dsw_df, avg_pd_df,
                 myrtype_df)
-ms_clean <- df_list %>% purrr::reduce(left_join, by='gis_navn') 
+ms_clean <- df_list %>% purrr::reduce(left_join, by='gis_navn')
 
 rm(avg_ash_df, avg_cao_df, avg_n_df, avg_dsw_df, avg_pd_df,
    myrtype_df, df_list)
@@ -155,13 +170,13 @@ rm(avg_ash_df, avg_cao_df, avg_n_df, avg_dsw_df, avg_pd_df,
 # Check that names match in the sf & df -----------------------------------
 
 myr_sf %>%
-  anti_join(ms_clean, by = c("name" = "gis_navn")) %>% 
-  arrange(name) %>% 
+  anti_join(ms_clean, by = c("name" = "gis_navn")) %>%
+  arrange(name) %>%
   pull(name) # n = 38 not found in ms_clean
 
 ms_clean %>%
-  anti_join(myr_sf, by = c("gis_navn" = "name")) %>% 
-  arrange(gis_navn) %>% 
+  anti_join(myr_sf, by = c("gis_navn" = "name")) %>%
+  arrange(gis_navn) %>%
   pull(gis_navn) # n = 28 not found in myr_sf
 
 
@@ -205,15 +220,15 @@ ms_clean[327, 1] <- "Roan_5"
 # change Oerland to Ørland in myr_sf
 
 myr_sf <- myr_sf %>% 
-  mutate(name = if_else(str_starts(name, "Oe"), 
+  mutate(name = if_else(str_starts(name, "Oe"),
                         paste0("Ø", substr(name, 3, nchar(name))),
                         name))
 
 
 # Join with bogs  ---------------------------------------------------------
 
-common_values <- myr_sf %>% 
-  merge(ms_clean, by.x = "name", by.y = "gis_navn") %>% 
+common_values <- myr_sf %>%
+  merge(ms_clean, by.x = "name", by.y = "gis_navn") %>%
   select(-c(id, geometry))
 
 plot(common_values[1])
@@ -227,9 +242,7 @@ coord_sort <- common_values[order(xy[,"X"], xy[,"Y"]),]
 assigned_mire <- coord_sort %>%
   mutate(assigned = if_else(row_number() <= 159, "Willeke", "Jenny")) %>%
   select(name, assigned, avg_ash, avg_cao, avg_n, avg_dsw, avg_pd,
-         myrtype = myrtype_2) %>% 
+         myrtype = myrtype_2) %>%
   mutate(in_tact = str_pad("", width = 20),
          notes = str_pad("", width = 100))
   st_write(assigned_mire, output_path)
-
-
