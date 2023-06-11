@@ -20,23 +20,45 @@ library(sf)
 library(dotenv) # loading secure variables from .env file
 
 
+# Check operating system --------------------------------------------------
+sys_info <- Sys.info()[c("sysname", "release", "version")]
+sys_name <- Sys.info()["sysname"]
+
+if (sys_name == "Linux") {
+  # print system and use info 
+  cat("OS:", sys_info, "\n")
+  user_dir <- Sys.getenv("HOME") 
+  cat("user_dir: ", user_dir, "\n")
+
+  # load secure variables from .env file
+  load_dot_env(file.path(user_dir, ".env"))
+  OS = Sys.getenv("LINUX")
+
+
+} else if (sys_name == "Windows") {
+  # print system and use info 
+  cat("OS:", sys_info, "\n")
+  user_dir <- Sys.getenv("USERPROFILE") 
+  cat("user_dir: ", user_dir, "\n")
+
+  # load secure variables from .env file
+  load_dot_env(file.path(user_dir, ".env"))
+  OS = Sys.getenv("WINDOWS")
+
+} else {
+  cat("OS:", sys_info, "\n")
+}
+
+
+
 # Project variables -------------------------------------------------------
 project_root <- here()
-cat(project_root, "\n")
+project_data <- file.path(OS, Sys.getenv("WETLAND_PATH"))
+cat("Local GIT location:", project_root, "\n")
+cat("Local data location: ", project_data, "\n")
 
-# load secure variables from .env file
-#user_dir <- Sys.getenv("HOME") #linux
-user_dir <- Sys.getenv("USERPROFILE") #windows
-load_dot_env(file.path(user_dir, ".env"))
-
-
-# windows NINA project folders
-path_raw <- file.path(Sys.getenv("WETLAND_PATH_WIN"), "data", "raw")
-path_interim <- file.path(Sys.getenv("WETLAND_PATH_WIN"), "data", "interim")
-
-# linux NINA project folders
-#path_raw <- file.path(Sys.getenv("WETLAND_PATH_LNX"), "data", "raw")
-#path_interim <- file.path(Sys.getenv("WETLAND_PATH_LNX"), "data", "interim")
+path_raw <- file.path(project_data, "data", "raw")
+path_interim <- file.path(project_data, "data", "interim")
 
 # Import data -------------------------------------------------------------
 path_myr_sf <- file.path(path_raw, "vector", "new.shp")
