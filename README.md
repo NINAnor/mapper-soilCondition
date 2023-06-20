@@ -67,4 +67,9 @@ ________________
 
 ## Contributors
 
-willeke acampo (NINA), jenny hanssen (NINA) willeke.acampo@nina.no, jenny.hansen@nina.no
+Jenny Hanssen (NINA), jenny.hansen@nina.no
+
+Willeke A'Campo (NINA), willeke.acampo@nina.no
+
+Zander Venter (NINA), zander.venter@nina.no
+
